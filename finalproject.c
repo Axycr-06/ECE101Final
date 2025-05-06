@@ -1,8 +1,11 @@
 //Contine adding siginificant comments
 
+//My girlfriend is Super Awesome!
 int deckSize = 100; //number of cards in the deck
 #include <stdio.h>
 #include <stdlib.h>
+#include <time.h>
+#include <string.h>
 
 typedef struct card_s{
    
@@ -13,6 +16,15 @@ typedef struct card_s{
    struct card_s *listp; // pointer to the next card in the list (extra credit)
 
 } card;
+
+typedef struct player_s{
+   char name[20]; //name of the player
+   
+   card *hand; //pointer to the player's hand of cards
+   
+   int handSize; //size of the player's hand
+
+} player;
 
 void CreateDeck(card cards[]){
    //Create deck of 100 cards
@@ -87,6 +99,20 @@ int main(void) {
    ShuffleCard(cards); //shuffle the deck
    printf("Shuffled deck:\n");
    printDeck(cards); //print the shuffled deck
+
+   //seed the random number generator
+   srand(time(NULL)); //seed the random number generator
+
+   //deal 7 cards to each player
+   printf("Enter number of players: ");
+   int numPlayers;
+
+   scanf("%d", &numPlayers); //get number of players
+   player *players = malloc(numPlayers * sizeof(player)); //create array of players
+
+
+
+
 
    return 0;
 }
