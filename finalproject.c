@@ -1,32 +1,38 @@
-//Contine adding siginificant comments
+/*
+Author: Shane Dyke
 
-//My girlfriend is Super Awesome!
-int deckSize = 100; //number of cards in the deck
+Due Date: 2025-05-07
+
+Course: ECE 101
+
+Final Project: UNO digital card game
+
+Description: This program simulates a simplified version of the UNO card game. It initializes a deck of cards, shuffles them, and deals cards to players. The program allows for multiple players and handles the drawing of cards from the deck.
+*/
+
 #include <stdio.h>
 #include <stdlib.h>
 #include <time.h>
 #include <string.h>
 
-typedef struct card_s{
+typedef struct card_t{
    
    char name; //’0’-‘9’ for number cards, ‘A’ for AND, ‘O’ for OR, ‘N’ for NOT, and ‘R’ for Reverse.
 
    char color; //’R’ for red, ‘Y’ for yellow, ‘G’ for green, ‘B’ for blue, and ‘S’ for special cards
 
-   struct card_s *listp; // pointer to the next card in the list (extra credit)
-
 } card;
 
-typedef struct player_s{
-   char name[20]; //name of the player
+typedef struct player_t{
+   char playerName[20]; //name of the player
    
-   card *hand; //pointer to the player's hand of cards
+   card *deck; //pointer to the player's hand of cards
    
-   int handSize; //size of the player's hand
+   int decksize; //size of the player's hand
 
 } player;
 
-void CreateDeck(card cards[]){
+void initializeDeck(card cards[]) {
    //Create deck of 100 cards
    //two sets of 0-9 cards of each color
    //5 of each special card
@@ -40,7 +46,6 @@ void CreateDeck(card cards[]){
       for(int j = 0; j < 20; ++j){
          cards[i * 20 + j].name = j % 10 + '0'; //0-9
          cards[i * 20 + j].color = colors[i]; //R, Y, G, B
-         cards[i * 20 + j].listp = NULL; //set to null for now
       }
    }
 
@@ -49,59 +54,46 @@ void CreateDeck(card cards[]){
       for(int j=0; j<4; ++j){
          cards[80 + i * 4 + j].name = special[j]; //A, O, N, R
          cards[80 + i * 4 + j].color = 'S'; //special
-         cards[80 + i * 4 + j].listp = NULL; //set to null for now
       }
    }
 }
 
 // Function to shuffle the deck of cards
-void ShuffleCard(card cards[]) {
+void shuffleDeck(card deck[]) {
    //shuffle 10000 times as per the requirement
-   for (int i = 0; i < 10000; i++) {
-      int index1 = rand() % deckSize; // Generate a random index
-      int index2 = rand() % deckSize; // Generate another random index
+   for (int i = 0; i < 10000; ++i) {
+      int index1 = rand() % 100; // Generate a random index
+      int index2 = rand() % 100; // Generate another random index
       // Swap the cards at the two random indices
-      card temp = cards[index1];
-      cards[index1] = cards[index2];
-      cards[index2] = temp;
+      card temp = deck[index1];
+      deck[index1] = deck[index2];
+      deck[index2] = temp;
    }
 }
 
-void deleteCard(card *cards, int index) {
-   //delete the card at the given index
-   for (int i = index; i < deckSize - 1; i++) {
-      cards[i] = cards[i + 1]; //shift cards to the left
+// Draw a single card from the deck and place it in a player's hand. Return 1 if the draw was successful, 0 if deck is empty.
+int drawCard(card deck[], int *deckSize, player p){
+   if(deckSize == 0){ //if deck is empty
+      return 0; //return 0
    }
-   deckSize--; //decrease the size of the deck
-}
-
-void dealCard(card *cards, int index) {
-   //deal the card at the given index
-   printf("Dealt card: %c%c\n", cards[index].name, cards[index].color);
-   deleteCard(cards, index); //delete the card from the deck
-}
-
-void printDeck(card *cards) {
-   //print the deck of cards
-   for (int i = 0; i < deckSize; i++) {
-      printf("%c%c ", cards[i].name, cards[i].color);
-   }
-   printf("\n");
+   p.deck[p.decksize] = deck[*deckSize - 1]; //draw card from deck and place in player's hand
+   p.decksize++; //increment player's hand size
+   *deckSize--; //decrement deck size
+   return 1; //return 1 for success
 }
 
 
 int main(void) {
 
-   card cards[deckSize]; //create deck of cards
-   CreateDeck(cards); //create the deck
+   int deckSize = 100; //size of the deck
+   card *cards = malloc(deckSize * sizeof(card)); //create deck of cards
 
-   printDeck(cards); //print the deck
-   ShuffleCard(cards); //shuffle the deck
-   printf("Shuffled deck:\n");
-   printDeck(cards); //print the shuffled deck
+   initializeDeck(cards); //create the deck
 
-   //seed the random number generator
    srand(time(NULL)); //seed the random number generator
+
+   shuffleDeck(cards); //shuffle the deck
+   
 
    //deal 7 cards to each player
    printf("Enter number of players: ");
@@ -109,6 +101,29 @@ int main(void) {
 
    scanf("%d", &numPlayers); //get number of players
    player *players = malloc(numPlayers * sizeof(player)); //create array of players
+   for (int i = 0; i < numPlayers; ++i) {
+      players[i].deck = malloc(7 * sizeof(card)); // allocate memory for each player's hand
+      players[i].decksize = 0; // initialize deck size
+   }
+
+   for(int i = 0; i < numPlayers; ++i) {
+      printf("Enter name of player %d: ", i + 1); //get player name
+      scanf("%s", players[i].playerName); //store player name
+      
+      players[i].decksize = 0; //initialize deck size
+      for(int j = 0; j < 7; ++j) { //deal 7 cards to each player
+         if(drawCard(cards, deckSize, players[i]) == 0){ //draw card from deck
+            printf("Deck is empty\n"); //if deck is empty
+            break; //break out of loop
+         }
+      }
+
+   }
+
+   for(int i=0; i<numPlayers; ++i){
+      printf("%s's hand:\n", players[i].playerName); //print player name
+
+   }
 
 
 
